@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Bus Tracking & ETA</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+body{
+    margin:0;
+    font-family:roboto;
+    background:#333333;
+}
+
+header{
+   background: linear-gradient(135deg, #4facfe, #a18cd1, #ff9a9e);
+
+    color:white;
+    padding:15px;
+    text-align:center;
+}
+
+.container{
+    padding:15px;
+}
+
+#map{
+    height:400px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.card{
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom:15px;
+}
+
+/* ETA Section Color */
+.eta-section{
+    background:linear-gradient(135deg,#00c6ff,#0072ff);
+    color:white;
+}
+
+/* Driver Dashboard Color */
+.driver-card{
+background: linear-gradient(135deg, #b3e5fc, #d1c4e9, #ffe0b2);
+    color:white;
+}
+.driver1-card{
+background: linear-gradient(135deg, #cdb4ff, #e0c3fc);
+    color:white;
+}
+/* ETA UI */
+.eta-wrapper{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.eta-list{
+    flex:1;
+}
+
+.eta-ui{
+    flex:1;
+    background:radial-gradient(circle at top,#4b1c71,#0b0613 60%);
+    padding:20px;
+    border-radius:12px;
+    color:white;
+    text-align:center;
+}
+
+.title{
+    font-size:14px;
+    letter-spacing:2px;
+    color:rgba(255,255,255,0.7);
+    margin-bottom:20px;
+}
+
+.countdown{
+    display:flex;
+    gap:15px;
+    justify-content:center;
+}
+
+.box{
+    width:100px;
+    height:90px;
+    background:rgba(255,255,255,0.06);
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+.number{
+    font-size:28px;
+    font-weight:600;
+}
+
+.label{
+    font-size:12px;
+    color:rgba(255,255,255,0.6);
+}
+
+.driver-panel{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+}
+
+.driver-panel div{
+    flex:1 1 45%;
+    margin:5px 0;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Smart Bus Tracking - Visakhapatnam</h1>
+<p>Live Location • ETA Prediction</p>
+<p>STUDENT :<a href="login.html.html"><input type="button" value="LOGIN"></a></p>
+</header>
+
+<div class="container">
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- ETA -->
+<div class="card eta-section">
+<h2>Estimated Arrival Times</h2>
+
+<div class="eta-wrapper">
+
+<div class="eta-list">
+<ul id="etaList"></ul>
+</div>
+
+<div class="eta-ui">
+<div class="title">NEXT STOP ARRIVAL IN</div>
+
+<div class="countdown">
+    <div class="box">
+        <div class="number" id="hours">00</div>
+        <div class="label">HOURS</div>
+    </div>
+    <div class="box">
+        <div class="number" id="minutes">00</div>
+        <div class="label">MINUTES</div>
+    </div>
+    <div class="box">
+        <div class="number" id="seconds">00</div>
+        <div class="label">SECONDS</div>
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- DRIVER -->
+<div class="card driver-card">
+<h3>Driver Dashboard</h3>
+<div class="driver-panel">
+<div><strong>Bus ID:</strong> BUS-101</div>
+<div><strong>Speed:</strong> <span id="speed">30</span> km/h</div>
+<div><strong>Route:</strong> Vizag Route</div>
+<div><strong>Status:</strong> On Time</div>
+</div>
+</div>
+
+<!-- DRIVER -->
+<div class="card driver1-card">
+<h3>Driver portal</h3>
+<div class="driver-panel">
+<div>Driver :<a href="Driver dashboard.html"><input type="button" value="LOGIN"></a></div>
+ 
+ <div><strong>AGE:</strong> <span id="speed">46</span> km/h</div>
+
+<div><strong>Bus no.:</strong>AP2025</div>
+ <div><strong>Name:</strong> Rahul </div>
+ 
+</div>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+
+/* BUS DATA (Visakhapatnam) */
+let bus = { lat:17.6868, lng:83.2185, speed:30 };
+
+const stops = [
+ {name:"RK Beach", lat:17.6883, lng:83.2217},
+ {name:"Dwaraka Bus Stand", lat:17.7200, lng:83.3000},
+ {name:"NAD Junction", lat:17.7440, lng:83.2620}
+];
+
+/* MAP */
+const map = L.map('map').setView([bus.lat, bus.lng], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+const busMarker = L.marker([bus.lat, bus.lng]).addTo(map)
+.bindPopup("Bus Location");
+
+stops.forEach(stop=>{
+    L.circleMarker([stop.lat, stop.lng], {radius:6}).addTo(map)
+    .bindPopup(stop.name);
+});
+
+/* DISTANCE FUNCTION */
+function calculateDistance(lat1, lon1, lat2, lon2){
+    const R = 6371;
+    const dLat = (lat2-lat1)*Math.PI/180;
+    const dLon = (lon2-lon1)*Math.PI/180;
+
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+              Math.sin(dLon/2)**2;
+
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* ETA + COUNTDOWN */
+function updateETA(){
+    const list = document.getElementById("etaList");
+    list.innerHTML = "";
+
+    stops.forEach((stop,index)=>{
+        const dist = calculateDistance(bus.lat,bus.lng,stop.lat,stop.lng);
+        const etaMin = Math.max(1, Math.round((dist/bus.speed)*60));
+
+        const li = document.createElement("li");
+        li.textContent = `${stop.name}: ${etaMin} min`;
+        list.appendChild(li);
+
+        if(index === 0){
+            let totalSeconds = etaMin * 60;
+
+            let hours = Math.floor(totalSeconds / 3600);
+            let minutes = Math.floor((totalSeconds % 3600) / 60);
+            let seconds = totalSeconds % 60;
+
+            document.getElementById("hours").innerText = String(hours).padStart(2, "0");
+            document.getElementById("minutes").innerText = String(minutes).padStart(2, "0");
+            document.getElementById("seconds").innerText = String(seconds).padStart(2, "0");
+        }
+    });
+}
+
+/* BUS MOVEMENT */
+function moveBus(){
+    bus.lat += 0.0005;
+    bus.lng += 0.0005;
+
+    busMarker.setLatLng([bus.lat,bus.lng]);
+    map.panTo([bus.lat,bus.lng]);
+
+    updateETA();
+}
+
+/* INIT */
+updateETA();
+setInterval(moveBus, 4000);
+
+</script>
+
+</body>
+</html>
