@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<head>
+<title>Smart Bus Tracking & ETA</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body{
+    margin:0;
+    font-family:roboto;
+    background:#333333;
+}
+
+header{
+    background: #4b1c71;
+    color:white;
+    padding:15px;
+    text-align:center;
+}
+
+.container{
+    padding:15px;
+}
+
+#map{
+    height:400px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom:15px;
+}
+
+/* ETA Glass UI */
+.eta-wrapper{
+    display:flex;
+    gap:550px;
+    flex-wrap:wrap;
+    margin-left:-2000px;
+   
+}
+
+.eta-list{
+    flex:1;
+}
+
+.eta-ui{
+    flex:1;
+    background:radial-gradient(circle at top, #4b1c71, #0b0613 60%);
+    padding:10px;
+    border-radius:12px;
+    color:white;
+    text-align:center;
+}
+
+.title{
+    font-size:14px;
+    letter-spacing:2px;
+    color:rgba(255,255,255,0.7);
+    margin-bottom:20px;
+}
+
+.countdown{
+    display:flex;
+    gap:15px;
+    justify-content:center;
+}
+
+.box{
+    width:120px;
+    height:100px;
+    background:rgba(255,255,255,0.06);
+    border-radius:15px;
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+.number{
+    font-size:36px;
+    font-weight:600;
+}
+
+.label{
+    font-size:12px;
+    letter-spacing:1px;
+    color:rgba(255,255,255,0.6);
+}
+
+.driver-panel{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+}
+
+.driver-panel div{
+    flex:1 1 45%;
+    margin:5px 0;
+}
+\/* Estimated Arrival Times Card Background */
+.eta-card{
+    background:#f5f7fa; /* light grey */
+    border-left:6px solid #6a1b9a; /* purple accent */
+}
+
+/* Driver Dashboard Card Background */
+.driver-card{
+    background:linear-gradient(135deg,  #4b1c71, #0b0613);
+    color:white;
+}
+
+/* Driver Dashboard text fix */
+.driver-card strong{
+    color:#40E0D0;
+}
+.eta-list ul{
+    list-style:none;
+    padding:0;
+}
+
+.eta-list li{
+    background:white;
+    padding:10px;
+    margin-bottom:8px;
+    border-radius:6px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+h2{
+   margin-left:600px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<img src="C:\Users\Elvin\OneDrive\Desktop\Epoch 4.0\Navbus.jpg" style="width:120px;height:120px;border-radius:50%;margin-top:10px;margin-right:1900px;">
+<h1 style="margin-top:-90px;">Smart Campus Bus Tracking</h1>
+<p>Live Location • ETA Prediction • Route Optimization</p>
+<h3> Student <a href="C:\Users\Elvin\OneDrive\Desktop\student_login.html"><div style="margin-left:130px;margin-top:-25px; color:white;"><input type="Button" value="Login"></div></a></h3>
+
+</header>
+
+<div class="container">
+
+<div id="map"></div>
+<div class="card eta-card">
+ <h2>Estimated Arrival Times</h2> 
+
+<div class="eta-wrapper">
+
+<!-- Stop-wise ETA -->
+<div class="eta-list">
+<ul id="etaList"></ul>
+</div>
+
+<!-- Glass Countdown ETA -->
+<div class="eta-ui">
+<div class="title">NEXT STOP ARRIVAL IN</div>
+
+<div class="countdown">
+    <div class="box">
+        <div class="number" id="hours">00</div>
+        <div class="label">HOURS</div>
+    </div>
+    <div class="box">
+        <div class="number" id="minutes">00</div>
+        <div class="label">MINUTES</div>
+    </div>
+    <div class="box">
+        <div class="number" id="seconds">00</div>
+        <div class="label">SECONDS</div>
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="card driver-card">
+<h3>Driver Dashboard<a href="C:\Users\Elvin\OneDrive\Desktop\driver_logo.html"><div style="margin-left:150px;margin-top:-25px; color:white;"><input type="Button" value="Login"></div></a></h3>
+<div class="driver-panel">
+<div><strong>Bus ID:</strong> BUS-101</div>
+<div><strong>Speed:</strong> <span id="speed">30</span> km/h</div>
+<div><strong>Route:</strong> Campus Loop</div>
+<div><strong>Status:</strong> On Time</div>
+ 
+
+</div>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+/* ---------------- BUS DATA ---------------- */
+let bus = { lat:12.9716, lng:77.5946, speed:30 };
+
+const stops = [
+ {name:"Main Gate", lat:12.9716, lng:77.5946},
+ {name:"Library", lat:12.9730, lng:77.5960},
+ {name:"Hostel", lat:12.9745, lng:77.5980}
+];
+
+/* ---------------- MAP ---------------- */
+const map = L.map('map').setView([bus.lat, bus.lng], 15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+const busMarker = L.marker([bus.lat, bus.lng]).addTo(map).bindPopup("Campus Bus");
+
+stops.forEach(stop=>{
+    L.circleMarker([stop.lat, stop.lng], {radius:6}).addTo(map).bindPopup(stop.name);
+});
+
+/* ---------------- DISTANCE ---------------- */
+function calculateDistance(lat1, lon1, lat2, lon2){
+    const R = 6371;
+    const dLat = (lat2-lat1)*Math.PI/180;
+    const dLon = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+              Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/* ---------------- ETA ---------------- */
+let nextStopETAms = 0;
+
+function updateETA(){
+    const list = document.getElementById("etaList");
+    list.innerHTML = "";
+
+    stops.forEach((stop,index)=>{
+        const dist = calculateDistance(bus.lat,bus.lng,stop.lat,stop.lng);
+        const etaMin = Math.round((dist/bus.speed)*60);
+
+        if(index === 0){
+            nextStopETAms = etaMin * 60 * 1000;
+        }
+
+        const li = document.createElement("li");
+        li.textContent = `${stop.name}: ${etaMin} min`;
+        list.appendChild(li);
+    });
+}
+
+/* ---------------- COUNTDOWN ---------------- */
+const etaTime = new Date("2025-12-21T09:00:00").getTime();
+
+function updateETA(){
+    const now = new Date().getTime();
+    const diff = etaTime - now;
+
+    if(diff <= 0){
+        document.querySelector(".title").innerText = "ARRIVED";
+        document.querySelectorAll(".number").forEach(n => n.innerText = "00");
+        return;
+    }
+
+    const totalHours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    document.getElementById("hours").innerText = String(totalHours).padStart(2, "0");
+    document.getElementById("minutes").innerText = String(minutes).padStart(2, "0");
+    document.getElementById("seconds").innerText = String(seconds).padStart(2, "0");
+}
+
+setInterval(updateETA, 1000);
+/* ---------------- BUS MOVE ---------------- */
+function moveBus(){
+    bus.lat += 0.0001;
+    bus.lng += 0.0001;
+
+    busMarker.setLatLng([bus.lat,bus.lng]);
+    map.panTo([bus.lat,bus.lng]);
+
+    updateETA();
+}
+
+updateETA();
+setInterval(moveBus,5000);
+setInterval(updateCountdown,1000);
+</script>
+
+</body>
+</html>

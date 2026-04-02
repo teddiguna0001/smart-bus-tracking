@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student ID Card</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background-image:url('Purple bg.jpeg');
+}
+
+/* MAIN CARD */
+.card{
+  background:#F0E6FF;
+  width:380px;
+  padding:25px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* PROFILE IMAGE */
+ 
+
+/* TEXT */
+.card h2{
+  margin:12px 0 5px;
+  color:#4b1c71;
+}
+
+.card p{
+  margin:5px 0;
+  color:#333;
+}
+
+/* INFO BOX */
+.info-box{
+  background:white;
+  padding:12px;
+  border-radius:10px;
+  margin-top:14px;
+}
+
+.info-box h4{
+  margin:0 0 8px;
+  color:#7E57C2;
+}
+
+input{
+  width:100%;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  outline:none;
+  font-size:14px;
+}
+
+/* QR STYLE */
+#qrcode{
+  margin-top:10px;
+  padding:12px;
+  background:white;
+  border-radius:12px;
+  display:flex;
+  justify-content:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* URL DISPLAY */
+.qr-text{
+  font-size:12px;
+  color:#555;
+  margin-top:8px;
+  word-break:break-all;
+}
+
+</style>
+</head>
+
+<body>
+ 
+
+<div class="card">
+<img src="https://i.imgur.com/6VBx3io.png">
+
+<h2 id="name">Name</h2>
+<p id="email">Email</p>
+<p id="roll">Roll</p>
+
+<div id="qrcode"></div>
+</div>
+
+<script>
+// Get data from login
+const student = JSON.parse(localStorage.getItem("student"));
+
+if(!student){
+  alert("Please login first!");
+  window.location.href = "login.html";
+}
+
+// Display data
+document.getElementById("name").innerText = student.name;
+document.getElementById("email").innerText = student.email;
+document.getElementById("roll").innerText = "Roll: " + student.roll;
+
+// Generate QR
+new QRCode(document.getElementById("qrcode"), {
+  text: `ID:${student.roll} | ${student.email}`,
+  width:150,
+  height:150
+});
+</script>
+
+
+</body>
+</html>

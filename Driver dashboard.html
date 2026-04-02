@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Driver Portal - Smart Bus System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background-image:url('Purple bg.jpeg');;
+}
+
+/* ---------- LOGIN ---------- */
+#loginBox{
+  width:350px;
+  margin:80px auto;
+  background:#F0E6FF;
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+  text-align:center;
+}
+
+#loginBox h2{
+  color:#7E57C2;
+}
+
+input, textarea{
+  width:90%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button{
+  background:#7E57C2;
+  color:white;
+  padding:10px 18px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#6A1B9A;
+}
+
+/* ---------- DASHBOARD ---------- */
+#dashboard{
+  display:none;
+  padding:20px;
+}
+
+.header{
+  background:#7E57C2;
+  color:white;
+  padding:15px;
+  border-radius:10px;
+}
+
+.section{
+  background:#F0E6FF;
+  padding:15px;
+  margin-top:15px;
+  border-radius:10px;
+}
+
+.section h3{
+  color:#5E35B1;
+}
+
+.info{
+  background:white;
+  padding:10px;
+  border-radius:6px;
+  margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginBox">
+  <h2>Driver Login</h2>
+  <input type="text" id="username" placeholder="Driver ID">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="msg"></p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <div class="header">
+    <h2>🚍 Driver Portal</h2>
+    <p>Welcome, <span id="driverName"></span></p>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="section">
+    <h3>👤 Driver Profile</h3>
+    <div class="info">
+      <p><b>Name:</b> Rahul Kumar</p>
+      <p><b>Bus Number:</b> JH05AB1234</p>
+      <p><b>Route:</b> City Center → College</p>
+    </div>
+  </div>
+
+  <!-- BUS CAPACITY -->
+  <div class="section">
+    <h3>🧍 Passenger Count</h3>
+    <input type="number" id="passengers" placeholder="Enter current passengers">
+    <button onclick="updatePassengers()">Update</button>
+    <div class="info" id="passengerInfo">Current Passengers: 0 / 50</div>
+  </div>
+
+  <!-- DRIVER ANNOUNCEMENT -->
+  <div class="section">
+    <h3>📢 Announcement to Passengers</h3>
+    <textarea id="announcement" placeholder="Enter announcement"></textarea>
+    <button onclick="postAnnouncement()">Send Update</button>
+    <div class="info" id="announcementBox">No announcements yet</div>
+  </div>
+
+  <!-- TIMING UPDATE -->
+  <div class="section">
+    <h3>⏰ Timing Update</h3>
+    <input type="text" id="timing" placeholder="Eg: Bus delayed by 10 mins">
+    <button onclick="updateTiming()">Update Timing</button>
+    <div class="info" id="timingBox">No timing changes</div>
+  </div>
+
+</div>
+
+<script>
+/* LOGIN */
+function login(){
+  let user = document.getElementById("username").value;
+  let pass = document.getElementById("password").value;
+
+  if(user==="driver1" && pass==="bus123"){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("dashboard").style.display="block";
+    document.getElementById("driverName").innerText="Rahul Kumar";
+  }else{
+    document.getElementById("msg").innerText="Invalid Login!";
+  }
+}
+
+/* PASSENGERS */
+function updatePassengers(){
+  let count = document.getElementById("passengers").value;
+  document.getElementById("passengerInfo").innerText =
+    "Current Passengers: " + count + " / 50";
+}
+
+/* ANNOUNCEMENT */
+function postAnnouncement(){
+  let text = document.getElementById("announcement").value;
+  if(text!=""){
+    document.getElementById("announcementBox").innerText = text;
+  }
+}
+
+/* TIMING */
+function updateTiming(){
+  let time = document.getElementById("timing").value;
+  if(time!=""){
+    document.getElementById("timingBox").innerText = time;
+  }
+}
+</script>
+
+</body>
+</html>
